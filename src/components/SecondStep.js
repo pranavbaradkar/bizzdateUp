@@ -1,20 +1,130 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form, Button } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 
+
+
 const SecondStep = (props) => {
+  //const [designation, setDesignation] = useState([]);
+  // const [gender, setGender] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [selectedDesignation, setSelectedDesignation] = useState('');
+  const [selectedGender, setSelectedGender] = useState('');
+
   const { user } = props;
   const { register, handleSubmit, errors } = useForm({
     defaultValues: {
-      user_email: user.user_email,
-      user_password: user.user_password
+      phone: user.phone,
+      age: user.age,
     }
   });
 
+  let designation = [
+    {
+      id: 1 ,
+      name: 'Founder'
+    },
+    {
+      id: 2 ,
+      name: 'Co-founder'
+    },
+    {
+      id: 3,
+      name: 'Professional'
+    },
+    {
+      id: 4 ,
+      name: 'Freelancer'
+    },
+  
+  ];
+
+
+  let gender = [
+    {
+      id: 1 ,
+      name: 'Male'
+    },
+    {
+      id: 2 ,
+      name: 'Female'
+    },
+    {
+      id: 3,
+      name: 'Other'
+    },
+  ];
+
+  useEffect(() => {
+    const getDesignation = async () => {
+      try {
+        setIsLoading(true);
+        // allCountries = result?.map(({ isoCode, name }) => ({
+        //   isoCode,
+        //   name
+        // }));
+        const [{ id: first_designation } = {}] = designation;
+        setSelectedDesignation(first_designation);
+        setIsLoading(false);
+      } catch (error) {
+        console.log(error);
+        //setDesignation([]);
+        setIsLoading(false);
+      }
+    };
+
+    getDesignation();
+  }, []);
+
+  useEffect(() => {
+    const getGender = async () => {
+      try {
+        setIsLoading(true);
+        // allCountries = result?.map(({ isoCode, name }) => ({
+        //   isoCode,
+        //   name
+        // }));
+        const [{ id: first_gender } = {}] = gender;
+        setSelectedGender(first_gender);
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+      }
+    };
+
+    getGender();
+  }, []);
+  
+
+
+
+
+
   const onSubmit = (data) => {
-    props.updateUser(data);
-    props.history.push('/third');
+    const updatedData = {
+        designations: designation.find(
+          (designation) => { 
+            return (designation.id == selectedDesignation)
+          }
+        )?.name,
+        genders: gender.find(
+          (gender) => {
+            return (gender.id == selectedGender)}
+        )?.name,
+      };
+      console.log(designation);
+      console.log(gender);
+      console.log(updatedData.designations);
+      console.log(updatedData.genders);
+
+    props.updateUser({
+        ...data,
+        ...updatedData
+      });
+    //console.log(props) ; 
+    props.history.push('/fourth');
   };
 
   return (
@@ -25,46 +135,84 @@ const SecondStep = (props) => {
         animate={{ x: 0 }}
         transition={{ stiffness: 150 }}
       >
-        <Form.Group controlId="first_name">
-          <Form.Label>Email</Form.Label>
+         <Form.Group controlId="phone">
+          <Form.Label>Mobile No.</Form.Label>
           <Form.Control
-            type="email"
-            name="user_email"
-            placeholder="Enter your email address"
+            type="text"
+            name="phone"
+            placeholder="Enter your mobile number"
             autoComplete="off"
             ref={register({
-              required: 'Email is required.',
+              required: 'Mobile number is required.',
               pattern: {
-                value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/,
-                message: 'Email is not valid.'
+                value: /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/i,
+                message: 'Mobile number should be of 10 digits'
               }
             })}
-            className={`${errors.user_email ? 'input-error' : ''}`}
+            className={`${errors.phone ? 'input-error' : ''}`}
           />
-          {errors.user_email && (
-            <p className="errorMsg">{errors.user_email.message}</p>
+          {errors.phone && (
+            <p className="errorMsg">{errors.phone.message}</p>
           )}
         </Form.Group>
 
-        <Form.Group controlId="password">
-          <Form.Label>Password</Form.Label>
+
+        <Form.Group controlId="age">
+          <Form.Label>Age</Form.Label>
           <Form.Control
-            type="password"
-            name="user_password"
-            placeholder="Choose a password"
+            type="text"
+            name="age"
+            placeholder="age"
             autoComplete="off"
             ref={register({
-              required: 'Password is required.',
-              minLength: {
-                value: 6,
-                message: 'Password should have at-least 6 characters.'
+              required: 'age is required.',
+              pattern: {
+                value: /^\d+$/,
+                message: 'Should be number'
               }
             })}
-            className={`${errors.user_password ? 'input-error' : ''}`}
+            className={`${errors.age ? 'input-error' : ''}`}
           />
-          {errors.user_password && (
-            <p className="errorMsg">{errors.user_password.message}</p>
+          {errors.age && (
+            <p className="errorMsg">{errors.age.message}</p>
           )}
+        </Form.Group>
+        <Form.Group controlId="designation">
+          {isLoading && (
+            <p className="loading">Loading destinations. Please wait...</p>
+          )}
+          <Form.Label>Designation</Form.Label>
+          <Form.Control
+            as="select"
+            name="designation"
+            value={selectedDesignation}
+            onChange={(event) => setSelectedDesignation(event.target.value)}
+          >
+            {designation.map(({ id, name }) => (
+              <option value={id} key={id}>
+                {name}
+              </option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+
+        <Form.Group controlId="gender">
+          {isLoading && (
+            <p className="loading">Loading genders. Please wait...</p>
+          )}
+          <Form.Label>Gender</Form.Label>
+          <Form.Control
+            as="select"
+            name="gender"
+            value={selectedGender}
+            onChange={(event) => setSelectedGender(event.target.value)}
+          >
+            {gender.map(({ id, name }) => (
+              <option value={id} key={id}>
+                {name}
+              </option>
+            ))}
+          </Form.Control>
         </Form.Group>
 
         <Button variant="primary" type="submit">

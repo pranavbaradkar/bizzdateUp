@@ -13,11 +13,12 @@ router.post('/register', async (req, res) => {
 
   try {
     user = new User(req.body);
+    console.log(user)
     user.user_password = await bcrypt.hash(user_password, 8);
-
     await user.save();
     res.status(201).send();
   } catch (e) {
+    console.log(e)
     res.status(500).send('Something went wrong. Try again later.');
   }
 });
